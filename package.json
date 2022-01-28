@@ -1,19 +1,20 @@
 {
-  "name": "Nft_Royalty_App",
+  "name": "nft_royalty_app",
   "version": "0.1.0",
   "author": "Hosokawa Zen",
-  "homepage": "https://hosokawa-zen.github.io/Nft_Royalty_App",
   "dependencies": {
     "@testing-library/jest-dom": "^5.16.1",
     "@testing-library/react": "^12.1.2",
     "@testing-library/user-event": "^13.5.0",
+    "@walletconnect/web3-provider": "^1.7.1",
     "bootstrap": "^5.1.3",
     "ethers": "^5.5.3",
+    "moralis": "^1.1.2",
     "react": "^17.0.2",
     "react-bootstrap": "^2.1.1",
     "react-dom": "^17.0.2",
     "react-router-dom": "^6.2.1",
-    "react-scripts": "5.0.0",
+    "react-scripts": "4.0.3",
     "web-vitals": "^2.1.4",
     "web3": "^1.7.0"
   },

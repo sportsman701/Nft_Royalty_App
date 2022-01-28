@@ -1,19 +1,15 @@
-import {useEffect, useState} from "react";
-import {Container, Row, Col, Spinner, Form, Button} from 'react-bootstrap';
-import './App.css';
-import alert from "bootstrap/js/src/alert";
+import {useCallback, useState} from "react";
+import {Container, Spinner, Form, Button} from 'react-bootstrap';
+import '../App.css';
 import {ethers} from "ethers";
 
-import NftRoyalty from './abis/NftRoyalty.json';
-import NftTrader from './abis/NftTrader.json';
-import {NFT_ROYALTY_ADDRESS, NFT_TRADER_ADDRESS} from "./const";
-import {getEtherPriceToBN, getRoyaltyPtParam} from "./utils";
-
-// SIOs
-const charities = [{id: 0, name: 'Bbanga Project1', address: '0x54cfF4e34155d2A1D74c2968ca62F557a1C2B709'}];
+import NftRoyalty from '../abis/NftRoyalty.json';
+import NftTrader from '../abis/NftTrader.json';
+import {CHARITIES, NFT_ROYALTY_ADDRESS, NFT_TRADER_ADDRESS} from "../const";
+import {getAuth, getEtherPriceToBN, getRoyaltyPtParam} from "../utils";
 
 // @author Hosokawa-zen
-function App() {
+function Home(callback, deps) {
     const [cause, setCause] = useState(null);
     const [uri, setURI] = useState('');
     const [price, setPrice] = useState(0);
@@ -24,39 +20,37 @@ function App() {
     const [processing, setProcessing] = useState(false);
 
     // Validation
-    const isValid = () => {
+    const isValid = useCallback(() => {
         if(!uri){
-            alert('Please input token uri!');
+            window.alert('Please input token uri!');
             return false;
         }
         if(!price){
-            alert('Please input token price!');
+            window.alert('Please input token price!');
             return false;
         }
         if(!selfRoyalty){
-            alert('Please input your royalty!');
+            window.alert('Please input your royalty!');
             return false;
         }
         if(!causeRoyalty){
-            alert('Please input cause royalty!');
+            window.alert('Please input cause royalty!');
             return false;
         }
         if(!cause){
-            alert('Please select cause!');
+            window.alert('Please select cause!');
             return false;
         }
         return true;
-    }
+    });
 
     // Mint NFT
-    async function onMint() {
-        if(isValid()){
+    const onMint = async () => {
+        if (isValid()) {
             if (typeof window.ethereum !== 'undefined') {
-                try{
+                try {
                     setProcessing(true);
-                    const [account] = await window.ethereum.request({method: 'eth_requestAccounts'})
-                    const provider = new ethers.providers.Web3Provider(window.ethereum);
-                    const signer = provider.getSigner()
+                    const {account, signer} = await getAuth();
 
                     // Get Contract Object
                     const nftContract = new ethers.Contract(NFT_ROYALTY_ADDRESS, NftRoyalty.abi, signer)
@@ -64,16 +58,16 @@ function App() {
 
                     // Approve
                     let approved = await nftContract.isApprovedForAll(account, NFT_TRADER_ADDRESS);
-                    if(!approved){
+                    if (!approved) {
                         const transaction = await nftContract.setApprovalForAll(NFT_TRADER_ADDRESS, true);
-                        await transaction.await();
+                        await transaction.wait();
                     }
 
                     // Mint
                     let transaction = await nftContract.mint(account, uri, getRoyaltyPtParam(selfRoyalty), getRoyaltyPtParam(causeRoyalty), cause);
                     const rsx = await transaction.wait();
                     const event = rsx.events.find(e => e.event === 'Transfer');
-                    if(event){
+                    if (event) {
                         const {from, to, tokenId} = event.args;
                         console.log('transaction, result', transaction, tokenId);
                         // Set Trade
@@ -90,10 +84,10 @@ function App() {
                     setProcessing(false);
                 }
             } else {
-                alert('Please install metamask');
+                window.alert('Please install metamask');
             }
         }
-    }
+    };
 
     return (<div className="App">
         <Container>
@@ -166,7 +160,7 @@ function App() {
                 <Form.Select aria-label="Default select example" onChange={(event) => setCause(event.target.value)}>
                     <option>Select Cause</option>
                     {
-                        charities.map((item, index) => (
+                        CHARITIES.map((item, index) => (
                             <option key={index} value={item.address} defaultValue={cause === item.address}>{item.name}</option>
                         ))
                     }
@@ -184,4 +178,4 @@ function App() {
     </div>);
 }
 
-export default App;
+export default Home;
